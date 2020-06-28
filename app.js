@@ -4,12 +4,20 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require ('body-parser');
+var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require ('./routes/dishRouter');
+var dishes = require('./models/dishes');
 
 var app = express();
+const url = 'mongodb://localhost:27017/conFusion';
+const connect = mongoose.connect(url);
+connect.then ((db) =>{
+  console.log('server is connected with mongodb database properly');
+})
+.catch((err) => next(err));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
