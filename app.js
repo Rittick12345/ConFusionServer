@@ -7,13 +7,18 @@ var bodyParser = require ('body-parser');
 var mongoose = require('mongoose');
 var session = require ('express-session');
 var FileStore = require('session-file-store')(session);
+var passport = require('passport');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require ('./routes/dishRouter');
 var dishes = require('./models/dishes');
+var User = require ('./models/user')
+var authenticate = require('./authenticate');
 
 var app = express();
+
+//setting up the mongo server//
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
 connect.then ((db) =>{
@@ -30,18 +35,24 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser('12345-67890-14785-23698'));//
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use (session({
   name: 'session-id',
   secret: '12345-67890-14785-23698',
   saveUninitialized: false,
   resave: false,
   store: new FileStore()
-}))
-app.use(express.static(path.join(__dirname, 'public')));
+}));
 
-app.use(auth);
+//initializing the passport middleware//
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use(auth);
+
 app.use('/dishes', dishRouter);
 
 
@@ -60,42 +71,19 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
+//basic authentication process
 function auth(req, res, next){
-if(!req.session.user){
-  var authHeader = req.headers.authorization;
-  if(!authHeader){
+  if(!req.user){
     var err = new Error ('You are not authorized');
     err.status = 401;
     res.setHeader('www-authenticate', 'basic');
     return next(err);
   }
-  var auth = new Buffer.from (authHeader.split(' ')[1], 'Base64').toString().split(':');
-  username = auth[0];
-  password = auth[1];
-
-  if (username == 'admin' && password == 'password'){
-    req.session.user = 'admin';
-    next ();
-    
-  }
   else{
-    var err = new Error ('username or password is incorrect');
-    err.status = 401;
-    next(err);
-  }
-}
-
-else if(req.session.user == 'admin')
-{ 
    console.log('req.session: ', req.session);
    res.statusCode = 200;
    next ();
+  }
 }
-else {
-  var err = new Error ('You are not authenticated');
-  err.status = 401;
-  next(err);
-}
-}
+
 module.exports = app;
