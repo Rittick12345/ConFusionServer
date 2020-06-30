@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require ('body-parser');
 var mongoose = require('mongoose');
+var session = require ('express-session');
+var FileStore = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -27,7 +29,14 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('12345-67890-14785-23698'));
+//app.use(cookieParser('12345-67890-14785-23698'));//
+app.use (session({
+  name: 'session-id',
+  secret: '12345-67890-14785-23698',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}))
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(auth);
@@ -53,7 +62,7 @@ app.use(function(err, req, res, next) {
 });
 
 function auth(req, res, next){
-if(!req.signedCookies.user){
+if(!req.session.user){
   var authHeader = req.headers.authorization;
   if(!authHeader){
     var err = new Error ('You are not authorized');
@@ -61,28 +70,32 @@ if(!req.signedCookies.user){
     res.setHeader('www-authenticate', 'basic');
     return next(err);
   }
-  var authr = new Buffer.from (authHeader.split(' ')[1], 'Base64').toString().split(':');
-  username = authr[0];
-  password = authr[1];
+  var auth = new Buffer.from (authHeader.split(' ')[1], 'Base64').toString().split(':');
+  username = auth[0];
+  password = auth[1];
 
   if (username == 'admin' && password == 'password'){
-    res.cookie ('user','admin',{signed:true});
+    req.session.user = 'admin';
     next ();
+    
   }
   else{
-    var err = new Error ('Your username or password is incorrect');
-    err.status = 404;
-    return next(err);
+    var err = new Error ('username or password is incorrect');
+    err.status = 401;
+    next(err);
   }
 }
-else if(req.signedCookies.user!= 'admin'){
-    var err = new Error ('You are not authenticated');
-    err.status = 401;
-    return next(err);
+
+else if(req.session.user == 'admin')
+{ 
+   console.log('req.session: ', req.session);
+   res.statusCode = 200;
+   next ();
 }
 else {
-  res.statusCode = 200;
-  next ();
+  var err = new Error ('You are not authenticated');
+  err.status = 401;
+  next(err);
 }
 }
 module.exports = app;
