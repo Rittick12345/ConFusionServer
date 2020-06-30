@@ -27,9 +27,10 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('12345-67890-14785-23698'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(auth);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
@@ -51,4 +52,37 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+function auth(req, res, next){
+if(!req.signedCookies.user){
+  var authHeader = req.headers.authorization;
+  if(!authHeader){
+    var err = new Error ('You are not authorized');
+    err.status = 401;
+    res.setHeader('www-authenticate', 'basic');
+    return next(err);
+  }
+  var authr = new Buffer.from (authHeader.split(' ')[1], 'Base64').toString().split(':');
+  username = authr[0];
+  password = authr[1];
+
+  if (username == 'admin' && password == 'password'){
+    res.cookie ('user','admin',{signed:true});
+    next ();
+  }
+  else{
+    var err = new Error ('Your username or password is incorrect');
+    err.status = 404;
+    return next(err);
+  }
+}
+else if(req.signedCookies.user!= 'admin'){
+    var err = new Error ('You are not authenticated');
+    err.status = 401;
+    return next(err);
+}
+else {
+  res.statusCode = 200;
+  next ();
+}
+}
 module.exports = app;
