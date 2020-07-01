@@ -4,6 +4,7 @@ var Dishes = require ('../models/dishes');
 var mongoose = require ('mongoose');
 var dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
+var authenticate = require ('../authenticate');
 
 dishRouter.route('/')
 
@@ -59,7 +60,7 @@ dishRouter.route('/:dishId')
     .catch((err) => next(err));
 })
 
-.post( (req,res,next) =>{
+.post((req,res,next) =>{
     res.statusCode = 403;
     res.end('Post operation is not supported on this particular dish!!!');
 })
@@ -187,7 +188,7 @@ dishRouter.route('/:dishId')
      res.end('POST method is not supported on /commentId');
  })
 
- .put ((req, res, next) =>{
+ .put((req, res, next) =>{
     Dishes.findById(req.params.dishId)
     .then((dish) =>{
         if (dish != null && dish.comments.id(req.params.commentId) != null) {

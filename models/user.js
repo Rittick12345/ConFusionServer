@@ -1,7 +1,8 @@
 var mongoose = require ('mongoose');
 var Schema = mongoose.Schema;
+const  Passport  = require('passport');
 var PassportLocalMongoose = require('passport-local-mongoose');
-const { Passport } = require('passport');
+
 var User = new Schema({
     admin:{
         type: Boolean,
