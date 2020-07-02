@@ -15,11 +15,13 @@ var dishRouter = require ('./routes/dishRouter');
 var dishes = require('./models/dishes');
 var User = require ('./models/user')
 var authenticate = require('./authenticate');
+var config = require('./config');
 
 var app = express();
 
 //setting up the mongo server//
-const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
+
 const connect = mongoose.connect(url);
 connect.then ((db) =>{
   console.log('server is connected with mongodb database properly');
@@ -37,21 +39,21 @@ app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser('12345-67890-14785-23698'));//
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use (session({
+/*app.use (session({
   name: 'session-id',
   secret: '12345-67890-14785-23698',
   saveUninitialized: false,
   resave: false,
   store: new FileStore()
-}));
+}));*/
 
 //initializing the passport middleware//
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use(auth);
+//app.use(auth);
 
 app.use('/dishes', dishRouter);
 
@@ -72,7 +74,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 //basic authentication process
-function auth(req, res, next){
+/*function auth(req, res, next){
   if(!req.user){
     var err = new Error ('You are not authorized');
     err.status = 401;
@@ -84,6 +86,6 @@ function auth(req, res, next){
    res.statusCode = 200;
    next ();
   }
-}
+}*/
 
 module.exports = app;
