@@ -11,6 +11,7 @@ dishRouter.route('/')
 
 .get(authenticate.verifyUser,(req,res,next) =>{
     Dishes.find({})
+    .populate('comments.author')
     .then((dish) =>{
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -50,8 +51,9 @@ dishRouter.route('/')
 
 dishRouter.route('/:dishId')
 
-.get( (req,res,next) =>{
+.get((req,res,next) =>{
     Dishes.findById(req.params.dishId)
+    .populate('comments.author')
     .then((dish) =>{
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -92,6 +94,7 @@ dishRouter.route('/:dishId')
 
  .get((req, res, next)=>{
      Dishes.findById(req.params.dishId)
+     .populate('comments.author')
      .then((dish) =>{
          if(dish != null)
          {
@@ -112,14 +115,20 @@ dishRouter.route('/:dishId')
      Dishes.findById(req.params.dishId)
      .then((dishes) =>{
          if(dishes !=null){
+             req.body.author = req.user._id;
              dishes.comments.push(req.body);
              dishes.save()
              .then((dish) =>{
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish.comments);
+                 Dishes.findById(dish._id)
+                 .populate('comments.author')
+                 .then((dish) =>{
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish.comments);
+                 },(err) => next(err))
+                
              })
-             .catch((err) => next(err));
+             .catch((err) => next(err))
          }
          else{
             var err = new Error('The particular dish' +req.params.dishId + 'not found');
@@ -162,6 +171,7 @@ dishRouter.route('/:dishId')
 
  .get((req, res, next) =>{
      Dishes.findById(req.params.dishId)
+     .populate('comments.author')
      .then((dish) =>{
          if(dish != null && dish.comments.id(req.params.commentId) != null){
             res.statusCode = 200;
@@ -200,10 +210,16 @@ dishRouter.route('/:dishId')
             }
             dish.save()
             .then((dish) =>{
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish.comments.id(req.params.commentId));
-            }, (err) => next(err))
+                Dishes.findById(dish._id)
+                .populate('comments.author')
+                .then((dish) =>{
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish.comments.id(req.params.commentId));
+                }, (err) => next(err))
+               
+            })
+            .catch((err) => next(err))
         }
         else if(dish == null){
             var err = new Error('The particular dish' +req.params.dishId + 'not found');
@@ -227,10 +243,17 @@ dishRouter.route('/:dishId')
             dish.comments.id(req.params.commentId).remove();
             dish.save()
             .then((dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);                
-            }, (err) => next(err));
+                Dishes.findById(dish._id)
+                .populate('comments.author')
+                .then((dish) =>{
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(dish); 
+
+                },(err) => next(err))
+                               
+            })
+            .catch((err) =>next (err));
         }
         else if (dish == null) {
             err = new Error('Dish ' + req.params.dishId + ' not found');
