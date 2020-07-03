@@ -44,10 +44,16 @@ router.post('/signup',(req, res, next) =>{
 
 router.post('/login',passport.authenticate('local'),(req, res, next) =>{
   var token = authenticate.getToken({_id: req.user._id});
+  if(req.user.admin == true){
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({status: 'you are successfully logged in as admin user!!!',token: token, success: true})
+  }
+  else{
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({success: true,token: token, status: 'You are successfully logged in!'});
-  
+  res.json({success: true,token: token, status: 'You are successfully logged in as verified user!!!'});
+  }
 });
 
 router.get('/logout',(req, res,next) =>{
