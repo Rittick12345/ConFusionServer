@@ -26,7 +26,7 @@ const connect = mongoose.connect(url);
 connect.then ((db) =>{
   console.log('server is connected with mongodb database properly');
 })
-.catch((err) => next(err));
+.catch((err) => console.log (err));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

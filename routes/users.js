@@ -9,8 +9,17 @@ router.use(bodyParser.json());
 
 /* GET users listing. */
 //for administrators//
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/',authenticate.verifyUser, authenticate.verifyAdmin, function(req, res) {
+  User.find({})
+  .then((users) =>{
+    res.statusCode = 200; 
+    res.setHeader ('Content-Type' , 'application/json');
+    res.json(users);
+  })
+  .catch((err) =>{
+    res.statusCode = 500;
+    res.json(err);
+  })
 });
 
 router.post('/signup',(req, res, next) =>{
