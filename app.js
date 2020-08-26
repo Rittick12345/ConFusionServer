@@ -19,6 +19,16 @@ var config = require('./config');
 
 var app = express();
 
+// Secure traffic only
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  }
+  else {
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+});
+
 //setting up the mongo server//
 const url = config.mongoUrl;
 
