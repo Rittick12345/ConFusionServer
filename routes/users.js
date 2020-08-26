@@ -3,13 +3,14 @@ var passport = require('passport');
 var bodyParser = require('body-parser');
 const User = require('../models/user');
 var authenticate = require('../authenticate');
+var cors = require('./cors');
 
 var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
 //for administrators//
-router.get('/',authenticate.verifyUser, authenticate.verifyAdmin, function(req, res) {
+router.get('/',cors.corsWithOption, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res) {
   User.find({})
   .then((users) =>{
     res.statusCode = 200; 
@@ -22,7 +23,7 @@ router.get('/',authenticate.verifyUser, authenticate.verifyAdmin, function(req, 
   })
 });
 
-router.post('/signup',(req, res, next) =>{
+router.post('/signup',cors.corsWithOption, (req, res, next) =>{
   User.register(new User({username: req.body.username}),req.body.password,(err, user) =>{
     if(err){
       res.statusCode = 500;
@@ -51,7 +52,7 @@ router.post('/signup',(req, res, next) =>{
 });
 
 
-router.post('/login',passport.authenticate('local'),(req, res, next) =>{
+router.post('/login',cors.corsWithOption, passport.authenticate('local'),(req, res, next) =>{
   var token = authenticate.getToken({_id: req.user._id});
   if(req.user.admin == true){
     res.statusCode = 200;
