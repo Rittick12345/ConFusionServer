@@ -13,6 +13,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require ('./routes/dishRouter');
 const uploadRouter = require('./routes/uploadRouter');
+var favouriteRouter = require('./routes/favouriteRouter');
 
 var dishes = require('./models/dishes');
 var User = require ('./models/user')
@@ -69,6 +70,7 @@ app.use('/users', usersRouter);
 
 app.use('/dishes', dishRouter);
 app.use('/imageUpload',uploadRouter);
+app.use('/favourites',favouriteRouter);
 
 
 
