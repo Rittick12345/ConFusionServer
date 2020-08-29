@@ -12,11 +12,15 @@ var passport = require('passport');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require ('./routes/dishRouter');
+//var promoRouter = require('./routes/promoRouter');
+var leaderRouter = require('./routes/leaderRouter');
 const uploadRouter = require('./routes/uploadRouter');
 var favouriteRouter = require('./routes/favouriteRouter');
 
 var dishes = require('./models/dishes');
-var User = require ('./models/user')
+var User = require ('./models/user');
+//var promotions = require('./models/promotions');
+var leaders = require('./models/leaders');
 var authenticate = require('./authenticate');
 var config = require('./config');
 
@@ -71,6 +75,8 @@ app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
 app.use('/imageUpload',uploadRouter);
 app.use('/favourites',favouriteRouter);
+//app.use('/promotions', promoRouter);
+app.use('/leaders',leaderRouter);
 
 
 
