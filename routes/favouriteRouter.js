@@ -119,9 +119,29 @@ favouriteRouter.route('/:dishId')
 .options(cors.corsWithOption, (req,res) =>{ res.statusCode(200);})
 
 .get(cors.corsWithOption, authenticate.verifyUser, (req, res,next) =>{
-    res.statusCode = 403;
-    res.setHeader('Content-Type', 'application/json');
-    res.json('GET operation not supported by /favourite/'+req.params.dishId);
+    Favourites.findOne({user: req.user._id},(err, favourite) =>{
+        if(err){
+            return next(err);
+        }
+        if(!favourite){
+            res.statusCode = 200;
+            res.setHeader('content-type','application/json');
+            res.json({'success': false, "favourites": favourite});
+            return;
+        }
+        else if(favourite.dishes.indexOf(req.params.dishId) < 0){
+            res.statusCode = 200;
+            res.setHeader('content-type','application/json');
+            res.json({'success': false, "favourites": favourite});
+            return;
+        }
+        else{
+            res.statusCode = 200;
+            res.setHeader('content-type','application/json');
+            res.json({'success': true, "favourites": favourite});
+            return;
+        }  
+    });
 })
 
 .post(cors.corsWithOption, authenticate.verifyUser, (req, res,next) =>{
